@@ -45,19 +45,6 @@ private:
             }
         }
 
-
-        //Done
-        //������� � ���������� ���� �� ���������
-        /*Node* next(size_type dist)
-        {
-            //if (dist == 0) std::exception("Node can't go to himself");
-            auto it = this->ways.find(dist);
-            return it != ways.end() ? it->second : nullptr;
-        }*/
-
-
-
-
         //Done
         size_type damerau_levenshtein(const value_type& word)
         {
@@ -89,12 +76,54 @@ private:
             return dist[size1 % 3][size2];
         }
 
-        friend class BK_tree;
+
     };
 
     size_type Num_of_mistakes;
     Node* root;
 
+    value_type corrected_word(const value_type& word) {
+        auto founded = find_in_branch(root, word);
+        if (founded.empty()) return value_type();
+        size_type size = word.size();
+        value_type corr_w;
+        size_type min_mistakes = 10, min_rem = 10;
+        while (!founded.empty()) {
+
+            auto tmp = founded.front();
+            size_type rem = abs(tmp.second.size()-size);
+            if (tmp.first < min_mistakes)
+            {
+                min_rem = rem;
+                corr_w = tmp.second;
+                min_mistakes = tmp.first;
+            }else if(tmp.first == min_mistakes && rem<min_rem){
+                min_rem = rem;
+                corr_w = tmp.second;
+            }
+            founded.pop();
+        }
+        return corr_w;
+    }
+
+
+    std::queue<std::pair<size_type, value_type>> find_in_branch(Node* tmp, const value_type& word) {
+        std::queue<std::pair<size_type, value_type>> queue1;
+        size_type dist = tmp->damerau_levenshtein(word);
+        if (dist <= Num_of_mistakes) queue1.push(std::make_pair(dist, tmp->data));
+        for (size_type i = dist - Num_of_mistakes; i <= dist + Num_of_mistakes; i++) {
+            auto it = tmp->ways.find(i);
+            if (it != tmp->ways.end()) {
+                auto queue2 = find_in_branch(it->second, word);
+                while (!queue2.empty()) {
+                    queue1.push(queue2.front());
+                    queue2.pop();
+                }
+            }
+        }
+        return queue1;
+
+    }
 public:
 
 
@@ -146,6 +175,7 @@ public:
             return;
         }
         Node *that = root;
+        size_type dist;
         for (;;)
         {
             size_type dist = that->damerau_levenshtein(tmp);
@@ -158,7 +188,6 @@ public:
             }
             else
             {
-                //������� �� ���� ���������� ���������
                 that = it->second;
             }
         }
@@ -190,11 +219,7 @@ public:
 
 
     //Done
-    BK_tree& operator=(BK_tree const& tmp){
-        root = tmp.root;
-        Num_of_mistakes = tmp.Num_of_mistakes;
-        return  *this;
-    }
+    BK_tree& operator=(BK_tree const& tmp) = default;
 
 
     //Done
@@ -213,47 +238,7 @@ public:
         return !rez.empty() ? rez : corrected_word(word);
     }
 
-    value_type corrected_word(const value_type& word) {
-        auto founded = find_in_branch(root, word);
-        if (founded.empty()) return value_type();
-        if (Num_of_mistakes == 1) {
-            return founded.front().second;
-        }
-        else
-        {
-            value_type corr_w;
-            size_type min_mistakes = 10;
-            while (!founded.empty()) {
 
-                auto tmp = founded.front();
-                if (tmp.first < min_mistakes)
-                {
-                    corr_w = tmp.second;
-                    min_mistakes = tmp.first;
-                }
-                founded.pop();
-            }
-            return corr_w;
-        }
-    }
-
-
-    std::queue<std::pair<size_type, value_type>> find_in_branch(Node* tmp, const value_type& word) {
-        size_type dist = tmp->damerau_levenshtein(word);
-        std::queue<std::pair<size_type, value_type>> queue1;
-        if (dist <= Num_of_mistakes) queue1.push(std::make_pair(dist, tmp->data));
-        for (size_type i = dist - Num_of_mistakes; i <= dist + Num_of_mistakes; i++) {
-            auto it = tmp->ways.find(i);
-            if (it != tmp->ways.end()) {
-                auto queue2 = find_in_branch(it->second, word);
-                while (!queue2.empty()) {
-                    queue1.push(queue2.front());
-                    queue2.pop();
-                }
-            }
-        }
-        return queue1;
-    }
 
     void init(std::string const& address){
         std::wifstream file(address, std::fstream::in);

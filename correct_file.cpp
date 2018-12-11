@@ -35,7 +35,7 @@ value_type correct_string(BK_tree *bkTree, value_type &src) {
     return result;
 }
 
- void correct_file(BK_tree *bkTree, std::string const&address_in, std::string const&address_out) {
+void correct_file(BK_tree *bkTree, std::string const &address_in, std::string const &address_out) {
     std::wifstream file_in(address_in, std::fstream::in);
     std::wofstream file_out(address_out, std::fstream::out);
 
