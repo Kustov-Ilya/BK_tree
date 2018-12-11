@@ -1,0 +1,9 @@
+language: cpp
+
+notifications:
+  email: false
+
+script:   
+- cmake -H. -B_build
+- cmake --build _build
+- _build/main input_rus.txt f_russian.txt output_rus.txt
