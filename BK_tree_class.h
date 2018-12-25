@@ -233,7 +233,7 @@ public:
 
     value_type find_with_mistakes(const value_type& word) {
         //if (word.empty()) std::exception("U can't find mistakes in void word");
-        //if (empty()) std::exception("BK is null");
+        if (empty()) return value_type();
         value_type rez = find(word);
         return !rez.empty() ? rez : corrected_word(word);
     }
